@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import {
-    View,
-    FlatList,
-    TouchableOpacity
+  View,
+  FlatList,
+  TouchableOpacity
 } from 'react-native';
 
 
@@ -12,7 +12,13 @@ export default class MultiSwitch extends Component {
     super(props);
     this.state = {
       active: this.props.active
-    } 
+    }
+  }
+
+  UNSAFE_componentWillReceiveProps = (newProps) => {
+    if( this.state.active !== newProps.active ) {
+      this.setState({ active: newProps.active })
+    }
   }
 
   getLayout(){
@@ -47,13 +53,18 @@ export default class MultiSwitch extends Component {
 
   setActive(index){
     if(!(this.props.neverActivate.includes(index))){
-      this.setState({active: index}, () => {this.props.onActivate(index)});
+      if(this.state.active === index){
+        this.setState({ active: 2 }, () => {this.props.onActivate(2)})
+      } else {
+        this.setState({active: index}, () => {this.props.onActivate(index)});
+
+      }
     }
   }
 
   getStyle(index, prop){
     if(index < 0 || index >= prop.length ){
-        return {};
+      return {};
     }//else
     return prop[index];
   }
@@ -63,27 +74,34 @@ export default class MultiSwitch extends Component {
     return (
       <TouchableOpacity onPress={() => {this.setActive(index)}}
                         style={[{
-                          width: this.props.choiceSize, 
+                          width: this.props.choiceSize,
                           height: this.props.choiceSize,
                           alignItems: 'center',
                           justifyContent: 'center',
-                        }, index === this.state.active ? 
-                           this.getStyle(index, this.props.activeContainerStyle) : 
-                           this.getStyle(index, this.props.inactiveContainerStyle)]} >
+                          borderRightWidth: this.state.active === 2 ? 1 : 0,
+                          borderTopRightRadius: 0,
+                          borderBottomRightRadius: 0,
+                          borderTopLeftRadius: 0,
+                          borderBottomLeftRadius: 0,
+                          overflow: "hidden",
+                          borderRightColor: "#0d5db8",
+                        }, index === this.state.active ?
+                          this.getStyle(index, this.props.activeContainerStyle) :
+                          this.getStyle(index, this.props.inactiveContainerStyle)]} >
         {
-          this.state.active === index ? 
-          React.cloneElement(
-            item,
-            {
-              style: [childStyle, this.getStyle(index, this.props.activeItemStyle)]
-            }
-          ) :
-          React.cloneElement(
-            item,
-            {
-              style: [childStyle, this.getStyle(index, this.props.inactiveItemStyle)]
-            }
-          ) 
+          this.state.active === index ?
+            React.cloneElement(
+              item,
+              {
+                style: [childStyle, this.getStyle(index, this.props.activeItemStyle)]
+              }
+            ) :
+            React.cloneElement(
+              item,
+              {
+                style: [childStyle, this.getStyle(index, this.props.inactiveItemStyle)]
+              }
+            )
         }
       </TouchableOpacity>
     )
@@ -91,10 +109,10 @@ export default class MultiSwitch extends Component {
 
   render(){
     return (
-      <View style={[{width: this.getContainerWidth() + 2, height: this.getContainerHeight()+2}, this.getStyle(this.state.active, this.props.containerStyles)]}>
-        <FlatList data={this.props.children} 
-                  keyExtractor={(item, nb) => { return nb.toString() }} 
-                  renderItem={this.renderItem.bind(this)} numColumns={this.getLayout().horizontal} style={{flex: 1}} 
+      <View style={[{width: this.getContainerWidth() + 2, height: this.getContainerHeight()+2}, this.getStyle(this.state.active, this.props.containerStyles), {borderWidth: 1, borderColor: "#0d5db8", borderRadius: 10, overflow: "hidden"}]}>
+        <FlatList data={this.props.children}
+                  keyExtractor={(item, nb) => { return nb.toString() }}
+                  renderItem={this.renderItem.bind(this)} numColumns={this.getLayout().horizontal} style={{flex: 1}}
                   showsHorizontalScrollIndicator={false}
                   showsVerticalScrollIndicator={false}/>
       </View>
@@ -105,15 +123,15 @@ export default class MultiSwitch extends Component {
 MultiSwitch.defaultProps = {
   containerStyles: [{}],
   activeContainerStyle: [{ backgroundColor: 'red', borderRadius: 100, borderWidth: 1, borderColor: 'rgb(180, 180, 180)'}
-                       , { backgroundColor: 'white', borderRadius: 100, borderWidth: 1, borderColor: 'rgb(180, 180, 180)'}
-                       , { backgroundColor: 'green', borderRadius: 100, borderWidth: 1, borderColor: 'rgb(180, 180, 180)'}
-                       , { backgroundColor: 'yellow', borderRadius: 100, borderWidth: 1, borderColor: 'rgb(180, 180, 180)'}
-                       ],
+    , { backgroundColor: 'white', borderRadius: 100, borderWidth: 1, borderColor: 'rgb(180, 180, 180)'}
+    , { backgroundColor: 'green', borderRadius: 100, borderWidth: 1, borderColor: 'rgb(180, 180, 180)'}
+    , { backgroundColor: 'yellow', borderRadius: 100, borderWidth: 1, borderColor: 'rgb(180, 180, 180)'}
+  ],
   inactiveContainerStyle: [{ backgroundColor: 'white', borderRadius: 100,}
-                       , { backgroundColor: 'white', borderRadius: 100,}
-                       , { backgroundColor: 'white', borderRadius: 100,}
-                       , { backgroundColor: 'white', borderRadius: 100,}
-                       ],
+    , { backgroundColor: 'white', borderRadius: 100,}
+    , { backgroundColor: 'white', borderRadius: 100,}
+    , { backgroundColor: 'white', borderRadius: 100,}
+  ],
   activeItemStyle: [{}, {}, {}, {}],
   inactiveItemStyle: [{}, {}, {}, {}],
   neverActivate: [],
